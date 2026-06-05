@@ -7,3 +7,5 @@ database/cashbridge.db
 .env.save
 database/cashbridge.db
 node_modules/
+ngrok
+package-lock.json
