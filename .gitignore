@@ -1,0 +1,9 @@
+node_modules/
+.env
+database/cashbridge.db
+*.log
+.DS_Store
+*.tgz
+.env.save
+database/cashbridge.db
+node_modules/
