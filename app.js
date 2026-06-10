@@ -23,6 +23,27 @@ app.get("/", (req, res) => res.send("✅ CashBridgeBot is running"));
 // ── Paystack webhook route ────────────────────────────────────────────────────
 app.use("/webhook/paystack", webhook);
 
+// ── Gumroad ping route ────────────────────────────────────────────────────────
+app.post("/gumroad-webhook", async (req, res) => {
+  try {
+    const data = req.body;
+    logger.info(`Gumroad sale: ${data.email} — ${data.product_name}`);
+
+    await bot.telegram.sendMessage(
+      "8282975474",
+      `💰 New Gumroad sale!\n` +
+      `Product: ${data.product_name || "AI Prompt Vault"}\n` +
+      `Buyer: ${data.email || "Unknown"}\n` +
+      `Amount: $${data.price ? (data.price / 100).toFixed(2) : "5.00"}`
+    );
+
+    res.sendStatus(200);
+  } catch (err) {
+    logger.error("Gumroad webhook error:", err.message);
+    res.sendStatus(200);
+  }
+});
+
 // ── Boot sequence ─────────────────────────────────────────────────────────────
 async function start() {
   try {
@@ -32,6 +53,7 @@ async function start() {
     app.listen(PORT, () => {
       logger.info(`Server listening on port ${PORT}`);
       logger.info(`Paystack webhook → POST /webhook/paystack`);
+      logger.info(`Gumroad webhook  → POST /gumroad-webhook`);
     });
 
     // Start Telegram bot polling
