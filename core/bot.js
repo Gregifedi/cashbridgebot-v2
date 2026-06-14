@@ -47,12 +47,10 @@ bot.use((ctx, next) => {
 bot.start(async (ctx) => {
   const chatId   = String(ctx.from.id);
   const username = ctx.from.username || ctx.from.first_name || "there";
-  const param    = ctx.startPayload || "";  // text after /start
+  const param    = ctx.startPayload || "";
 
-  // Ensure user record exists
   db.upsertUser({ chatId, username });
 
-  // Handle referral deep link: /start ref_CODE
   if (param.startsWith("ref_")) {
     const code      = param.replace("ref_", "");
     const affiliate = db.getAffiliateByCode(code);
@@ -61,8 +59,8 @@ bot.start(async (ctx) => {
     return ctx.replyWithMarkdown(
       `👋 Welcome, ${username}!\n\n` +
       `You were referred by an affiliate. Subscribe now and they earn ${Math.round(rate * 100)}% monthly commission.\n\n` +
-      `💳 *Subscribe to the Prompt Vault — $${config.SUBSCRIPTION_PRICE_USD}/month:*\n` +
-      `https://paystack.com/pay/cashbridge-vault?telegram_id=${chatId}&affiliate_code=${code}\n\n` +
+      `💳 *Subscribe to the Prompt Vault — ₦5,000/month:*\n` +
+      `https://paystack.shop/pay/cashbridgevault?telegram_id=${chatId}&affiliate_code=${code}\n\n` +
       `After payment, come back and type /status to verify your access.`
     );
   }
@@ -88,8 +86,8 @@ bot.command("subscribe", async (ctx) => {
 
   ctx.replyWithMarkdown(
     `💳 *Subscribe to the Prompt Vault*\n\n` +
-    `*$${config.SUBSCRIPTION_PRICE_USD}/month* — new prompts every Monday, cancel anytime.\n\n` +
-    `👉 [Pay securely via Paystack](https://paystack.com/pay/cashbridge-vault?telegram_id=${chatId})\n\n` +
+    `*₦5,000/month* — new prompts every Monday, cancel anytime.\n\n` +
+    `👉 [Pay securely via Paystack](https://paystack.shop/pay/cashbridgevault?telegram_id=${chatId})\n\n` +
     `Your Telegram ID \`${chatId}\` is attached to the link.\n` +
     `Access is granted automatically within seconds of payment.`,
     { disable_web_page_preview: true }
@@ -146,7 +144,6 @@ bot.command("link", async (ctx) => {
     return ctx.reply("Usage: /link your@email.com");
   }
 
-  // Check if this email has a payment on record
   const sub = db.getSubscriptionByEmail(email);
 
   if (!sub) {
@@ -155,7 +152,6 @@ bot.command("link", async (ctx) => {
     );
   }
 
-  // Link chatId to this email
   db.linkEmailToChatId(email, chatId);
   db.upsertUser({ chatId, email });
 
@@ -173,7 +169,6 @@ bot.command("affiliate", async (ctx) => {
   const chatId   = String(ctx.from.id);
   const username = ctx.from.username || ctx.from.first_name || "Affiliate";
 
-  // Get or create affiliate record
   let aff = db.getAffiliateByChatId(chatId);
   if (!aff) {
     const code = helpers.generateReferralCode();
@@ -235,14 +230,13 @@ bot.command("help", (ctx) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ADMIN COMMANDS — only respond to OWNER_CHAT_ID
+// ADMIN COMMANDS
 // ─────────────────────────────────────────────────────────────────────────────
 
 function isAdmin(ctx) {
   return String(ctx.from.id) === config.OWNER_CHAT_ID;
 }
 
-// /stats
 bot.command("stats", async (ctx) => {
   if (!isAdmin(ctx)) return;
   const s = db.getStats();
@@ -258,7 +252,6 @@ bot.command("stats", async (ctx) => {
   );
 });
 
-// /highestpayer
 bot.command("highestpayer", (ctx) => {
   if (!isAdmin(ctx)) return;
   const top = db.getTopPayers(5);
@@ -272,22 +265,19 @@ bot.command("highestpayer", (ctx) => {
   ctx.replyWithMarkdown(`💰 *Top Payers*\n\n${lines}`);
 });
 
-// /broadcast [message]
 bot.command("broadcast", async (ctx) => {
   if (!isAdmin(ctx)) return;
 
   const text = ctx.message.text.replace("/broadcast", "").trim();
   if (!text) return ctx.reply("Usage: /broadcast Your message here");
 
-  const subs   = db.getAllActiveSubscriptions();
+  const subs    = db.getAllActiveSubscriptions();
   const chatIds = subs.map(s => s.chat_id).filter(Boolean);
 
   const { sent, failed } = await notify.broadcast(chatIds, `📢 ${text}`);
   ctx.reply(`Broadcast done. Sent: ${sent} | Failed: ${failed}`);
 });
 
-// ── Handle payment-like forwarded messages (from your original cashbridgebot)
-// Keeps backward compatibility if users forward bank SMS alerts ──────────────
 bot.on("text", (ctx) => {
   const text = ctx.message.text;
   if (rules.isPaymentMessage(text)) {
@@ -303,7 +293,6 @@ bot.on("text", (ctx) => {
   }
 });
 
-// ── Weekly Friday leaderboard broadcast ───────────────────────────────────────
 function scheduleFridayLeaderboard() {
   const now    = new Date();
   const friday = new Date();
@@ -325,7 +314,7 @@ function scheduleFridayLeaderboard() {
         `🏆 *Weekly Leaderboard*\n\n${lines}\n\nKeep sharing your link to climb the ranks!`
       );
     }
-    scheduleFridayLeaderboard(); // reschedule for next week
+    scheduleFridayLeaderboard();
   }, ms);
 }
 
