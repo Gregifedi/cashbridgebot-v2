@@ -14,7 +14,8 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Raw body MUST come before json() for HMAC verification ──────────────────
-app.use("/webhook/paystack", express.raw({ type: "application/json" }));
+app.use("/webhook/paystack",     express.raw({ type: "application/json" }));
+app.use("/webhook/flutterwave",  express.raw({ type: "application/json" }));
 app.use(express.json());
 
 // ── Health check ─────────────────────────────────────────────────────────────
@@ -22,6 +23,9 @@ app.get("/", (req, res) => res.send("✅ CashBridgeBot is running"));
 
 // ── Paystack webhook route ────────────────────────────────────────────────────
 app.use("/webhook/paystack", webhook);
+
+// ── Flutterwave webhook route ─────────────────────────────────────────────────
+app.use("/webhook/flutterwave", webhook);
 
 // ── Gumroad ping route ────────────────────────────────────────────────────────
 app.post("/gumroad-webhook", async (req, res) => {
@@ -52,11 +56,11 @@ async function start() {
 
     app.listen(PORT, () => {
       logger.info(`Server listening on port ${PORT}`);
-      logger.info(`Paystack webhook → POST /webhook/paystack`);
-      logger.info(`Gumroad webhook  → POST /gumroad-webhook`);
+      logger.info(`Paystack webhook    → POST /webhook/paystack`);
+      logger.info(`Flutterwave webhook → POST /webhook/flutterwave`);
+      logger.info(`Gumroad webhook     → POST /gumroad-webhook`);
     });
 
-    // Start Telegram bot polling
     bot.launch();
     logger.info("Telegram bot polling started");
 
