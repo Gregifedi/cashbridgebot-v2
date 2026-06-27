@@ -60,7 +60,7 @@ bot.start(async (ctx) => {
       `👋 Welcome, ${username}!\n\n` +
       `You were referred by an affiliate. Subscribe now and they earn ${Math.round(rate * 100)}% monthly commission.\n\n` +
       `💳 *Subscribe to the Prompt Vault — ₦5,000/month:*\n` +
-      `https://paystack.shop/pay/cashbridgevault?telegram_id=${chatId}&affiliate_code=${code}\n\n` +
+      `https://flutterwave.com/pay/cashbridgevault?telegram_id=${chatId}&affiliate_code=${code}\n\n` +
       `After payment, come back and type /status to verify your access.`
     );
   }
@@ -87,7 +87,7 @@ bot.command("subscribe", async (ctx) => {
   ctx.replyWithMarkdown(
     `💳 *Subscribe to the Prompt Vault*\n\n` +
     `*₦5,000/month* — new prompts every Monday, cancel anytime.\n\n` +
-    `👉 [Pay securely via Paystack](https://paystack.shop/pay/cashbridgevault?telegram_id=${chatId})\n\n` +
+    `👉 [Pay securely via Flutterwave](https://flutterwave.com/pay/cashbridgevault?telegram_id=${chatId})\n\n` +
     `Your Telegram ID \`${chatId}\` is attached to the link.\n` +
     `Access is granted automatically within seconds of payment.`,
     { disable_web_page_preview: true }
