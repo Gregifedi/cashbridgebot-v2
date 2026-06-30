@@ -61,7 +61,7 @@ async function processSuccessfulPayment({ email, amount, currency, reference, ch
 router.post("/", async (req, res) => {
   const signature = req.headers["x-paystack-signature"];
 
-  if (false && !verifyPaystackSignature(req.body, signature)) {
+  if (!verifyPaystackSignature(req.body, signature)) {
     logger.warn("Rejected Paystack webhook — invalid signature");
     return res.status(401).json({ error: "Invalid signature" });
   }
